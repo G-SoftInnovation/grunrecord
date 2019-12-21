@@ -7,6 +7,7 @@ Version: 1.0.0
 Author: Natthapong Noosing
 Author URI: http://www.g-runth.com
 */
+include( plugin_dir_path(__FILE__).'/get_stat_inc.php' );
 
 function grun_record_requires_wordpress_version() {
 	global $wp_version;
@@ -144,6 +145,15 @@ function grun_record_form() {
 
     $pluginpath = plugin_dir_path( __FILE__ );
     $imageurl = $pluginpath . '/img/no_image_png.png';
+    $record = array(
+        'distance' => 0.00,
+        'time' => array(
+            'hour' => 0,
+            'minute' => 0,
+            'second' => 0
+        )
+
+    );
     $distance = 0.00;
     $time = "00:00";
     $time_h = 0;
@@ -154,50 +164,9 @@ function grun_record_form() {
 	if(!empty($_FILES['run_result'] ) && $_POST['action'] == 'grun_record_veriify'){
 
         if($_FILES['run_result']['name'] != ''){
-			$uploadedfile = $_FILES['run_result'];
-			$upload_overrides = array( 'test_form' => false );
-			//$tmpFile = file_get_contents( $_FILES['file']['tmp_name'] );
-			$strUrl = "https://vision.googleapis.com/v1/images:annotate?key=AIzaSyAYLewmPru1UrMYpOPhbvk2Xp3GXNyd7FU";   
-
-			$arrHeader = array();
-			$arrHeader[] = "Content-Type: application/json";
-
-			$objImgData = file_get_contents( $_FILES['run_result']['tmp_name'] );
-			$objImgBase64 =  base64_encode($objImgData);
-
-			$arrPostData = array();
-			$arrPostData['requests'][0]['image']['content'] = $objImgBase64;
-
-			$arrPostData['requests'][0]['features'][0]['type'] = "TEXT_DETECTION";
-			$arrPostData['requests'][0]['features'][0]['maxResults'] = "5";
-
-			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL,$strUrl);
-			curl_setopt($ch, CURLOPT_HTTPHEADER, $arrHeader);
-			curl_setopt($ch, CURLOPT_HEADER, false);
-			curl_setopt($ch, CURLOPT_POST, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($arrPostData));
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-			$result = curl_exec($ch);
-			curl_close ($ch);
-            $json = json_decode(trim($result));
-            
-            $text = ($json->responses[0]->textAnnotations[0]->description);
-
-            $distance_pattern = "/[+-]?([0-9]?[0-9])([.][0-9][0-9]?)?+[\s]?(km|KM|Km|กม|nu)/";
-            if (preg_match($distance_pattern, $text, $matches)) {
-                $distance =  $matches[1] . $matches[2]  ;
-            }
-
-            $time_pattern = "/([1-5])?:?([0-5][0-9]):?([0-5][0-9])/";
-            if (preg_match($time_pattern, $text, $matches)) {
-                $time =  $matches[0];
-                $time_h = $matches[1];
-                $time_m = $matches[2];
-                $time_s = $matches[3];
-            }
-            $movefile = wp_handle_upload($uploadedfile, $upload_overrides);
+			$uploaded_file = $_FILES['run_result'];
+            $record = grun_get_stat_from_img($uploaded_file);
+            $movefile = wp_handle_upload($uploaded_file, $upload_overrides);
             $imageurl = $movefile['url'];
         }
         else{
@@ -261,9 +230,9 @@ function grun_record_form() {
                  . "INNER JOIN wp_grun_events_records ger ON r.record_id = ger.record_id "
                  . "GROUP BY r.uid, ger.eid "
                  . " ) rc INNER JOIN wp_users u ON u.ID = rc.uid "
-                 . "INNER JOIN grun_event_member em ON em.uid = u.ID ";
+                 . "INNER JOIN grun_event_member em ON em.uid = u.ID "
                  ." WHERE rc.eid = " . $_POST['record_event'] 
-                 ." AND em.uid = " .  get_current_user_id()                    
+                 ." AND em.uid = " .  get_current_user_id();              
             $event_summary = $wpdb->get_row($q);
        
         }
@@ -327,16 +296,16 @@ function grun_record_form() {
     </div>
     <div class="wcp-form-group">
         <label for="wcp-distance" class="wcp-form-label">ระยะทางที่วิ่ง (กม.)</label>
-        <input type="hidden" name="distance_raw" value="<?php echo $distance; ?>">
-        <input type="text" id="wcp-distance" name="distance" class="wcp-form-control" value="<?php echo $distance; ?>"/>
+        <input type="hidden" name="distance_raw" value="<?php echo $record['distance']; ?>">
+        <input type="text" id="wcp-distance" name="distance" class="wcp-form-control" value="<?php echo $record['distance']; ?>"/>
     </div>
     <div class="wcp-form-group">
         <label for="wcp-time" class="wcp-form-label">เวลาที่ใช้วิ่ง </label>
         <div class="input-group">
             <input type="hidden" name="time_raw" value="<?php echo $time; ?>">
-            <input class="wcp-form-control" type="number" name="time_h" aria-label="ชั่วโมง" placeholder="ชั่วโมง" class="wcp-form-control" value="<?php echo $time_h; ?>"/>
-            <input class="wcp-form-control" type="number" name="time_m" aria-label="นาที" placeholder="นาที" class="wcp-form-control" value="<?php echo $time_m; ?>"/>
-            <input class="wcp-form-control" type="number" name="time_s" aria-label="วินาที" placeholder="วินาที" class="wcp-form-control" value="<?php echo $time_s; ?>"/>
+            <input class="wcp-form-control" type="number" name="time_h" aria-label="ชั่วโมง" placeholder="ชั่วโมง" class="wcp-form-control" value="<?php echo $record['time']['hour']; ?>"/>
+            <input class="wcp-form-control" type="number" name="time_m" aria-label="นาที" placeholder="นาที" class="wcp-form-control" value="<?php echo $record['time']['minute']; ?>"/>
+            <input class="wcp-form-control" type="number" name="time_s" aria-label="วินาที" placeholder="วินาที" class="wcp-form-control" value="<?php echo $record['time']['second']; ?>"/>
         </div>
     </div>
 <?php } ?>
