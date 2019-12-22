@@ -7,7 +7,7 @@ Version: 1.0.0
 Author: Natthapong Noosing
 Author URI: http://www.g-runth.com
 */
-include( plugin_dir_path(__FILE__).'/get_stat_inc.php' );
+include_once( plugin_dir_path(__FILE__).'/get_stat_inc.php' );
 
 function grun_record_requires_wordpress_version() {
 	global $wp_version;
@@ -164,8 +164,10 @@ function grun_record_form() {
 	if(!empty($_FILES['run_result'] ) && $_POST['action'] == 'grun_record_veriify'){
 
         if($_FILES['run_result']['name'] != ''){
-			$uploaded_file = $_FILES['run_result'];
+            $upload_overrides = array( 'test_form' => false );
+            $uploaded_file = $_FILES['run_result'];
             $record = grun_get_stat_from_img($uploaded_file);
+            var_dump( $record);
             $movefile = wp_handle_upload($uploaded_file, $upload_overrides);
             $imageurl = $movefile['url'];
         }
@@ -179,7 +181,6 @@ function grun_record_form() {
         // Check that all required fields are present and non-empty
         if ( wp_verify_nonce( $_POST['grun_user_form'], 'add_record_form' ) &&
             !empty( $_POST['record_event'] ) &&
-            !empty( $_POST['distance_raw'] ) &&
             !empty( $_POST['distance'] )   ) 
         {
             $now = date('Y-m-d H:i:s');
@@ -223,14 +224,20 @@ function grun_record_form() {
 
             // Store book author and rating
             $current_uid = get_current_user_id();
-            $q = "SELECT u.ID as uid, em.target_distance, rc.total_distance, em.bib_img_url, "
-                 . "(em.target_distance - rc.total_distance) < 0 AS has_finished "
-                 . "FROM (SELECT r.uid, ger.eid, SUM(r.distance) as total_distance "
+            $q = "SELECT u.ID as uid, em.target_distance, rc.total_distance, rc.total_times, em.bib_img_url, "
+                 . "(em.target_distance - rc.total_distance) < 0 AS has_finished, rrc.distance_per_day "
+                 . "FROM (SELECT r.uid, ger.eid, SUM(r.distance) as total_distance, SUM(r.time_in_seconds) as total_times "
                  . "FROM ". $wpdb->get_blog_prefix() ."grun_record r "
                  . "INNER JOIN wp_grun_events_records ger ON r.record_id = ger.record_id "
                  . "GROUP BY r.uid, ger.eid "
                  . " ) rc INNER JOIN wp_users u ON u.ID = rc.uid "
                  . "INNER JOIN grun_event_member em ON em.uid = u.ID "
+                 . "INNER JOIN ( "
+                 . "SELECT gr.uid, ger.eid, (SUM(gr.distance)/COUNT(distinct CAST(gr.created_time AS DATE))) AS distance_per_day "
+                 . "FROM wp_grun_record gr "
+                 . "INNER JOIN wp_grun_events_records ger ON gr.record_id = ger.record_id "
+                 . "GROUP BY gr.uid, ger.eid "
+                 . ") rrc ON rrc.eid = rc.eid AND rc.uid = rrc.uid "
                  ." WHERE rc.eid = " . $_POST['record_event'] 
                  ." AND em.uid = " .  get_current_user_id();              
             $event_summary = $wpdb->get_row($q);
@@ -329,37 +336,9 @@ function grun_record_form() {
 </form>
  <?php }
  
- else{ ?>
-
-<!-- Page Content -->
-<div class="">
-  <!-- Portfolio Item Row -->
-  <div class="row">
-    <div class="col-2">
-      <h3 class="my-3">สถิติการวิ่ง</h3>
-      <ul>
-        <li><b>ระยะทางที่ที่สะสมได้:</b> <?php echo $event_summary->total_distance; ?> กิโลเมตร</li>
-        <li><b>ระยะทางเป้าหมาย:</b> <?php echo $event_summary->target_distance; ?> กิโลเมตร</li>
-        <?php if($event_summary->has_finished == 0) { ?>
-        <li><b>ระยะทางคงเหลือ:</b>  <?php echo ($event_summary->target_distance -  $event_summary->total_distance); ?> กิโลเมตร</li>
-        <?php } else { ?>
-        <li><b>สถานะ:</b>  Finished </li>
-        <?php } ?>
-      </ul>
-    </div>
-    <div class="col-2">
-      <img class="img-fluid" src="<?php echo $event_summary->bib_img_url; ?>" alt="">
-    </div>
-
-  </div>
-  <!-- /.row -->
-
-</div>
-<!-- /.container -->
-
-
-<!-- ENd result -->
-<?php 
+ else{ 
+    
+    include( plugin_dir_path( __FILE__ ) . 'summary_inc.php');
  }
 }
 ?>
