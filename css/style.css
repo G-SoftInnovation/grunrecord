@@ -149,8 +149,8 @@
     .grun-col-lg-6 {
         position: relative;
         width: 100%;
-        padding-right: 15px;
-        padding-left: 15px;
+        padding-right: 10px;
+        padding-left: 10px;
     }
 
     .row {
@@ -326,7 +326,7 @@
     }
     .grun-widget-chart .widget-numbers {
         font-weight: bold;
-        font-size: 2.5rem;
+        font-size: 2.25rem;
         display: block;
         line-height: 1;
         margin-top: 3rem;
@@ -511,5 +511,5 @@
         border-radius:10px 10px 10px 10px;
         border: none;
         background-color: #fff;
-        padding:10px;
+        padding:5px;
     }

@@ -167,7 +167,7 @@ function grun_record_form() {
             $upload_overrides = array( 'test_form' => false );
             $uploaded_file = $_FILES['run_result'];
             $record = grun_get_stat_from_img($uploaded_file);
-            var_dump( $record);
+
             $movefile = wp_handle_upload($uploaded_file, $upload_overrides);
             $imageurl = $movefile['url'];
         }
