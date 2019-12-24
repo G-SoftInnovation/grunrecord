@@ -3,7 +3,7 @@ function readURL(input) {
 
     var reader = new FileReader();
 
-    reader.onload = function(e) {
+    reader.onloadend = function(e) {
       jQuery('.image-upload-wrap').hide();
 
       jQuery('.file-upload-image').attr('src', e.target.result);

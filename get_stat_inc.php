@@ -59,9 +59,7 @@ function grun_get_stat_from_img($uploaded_file){
     return array(
         'distance' => 0.0,
         'time' => array(
-            'hour' =>  0,
-            'minute' => 0,
-            'second' => 0
+           
         )
     );
 
