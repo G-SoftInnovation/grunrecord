@@ -163,7 +163,7 @@
                         $avg_pace = 0;
                         if($event_summary->total_times != null && $event_summary->total_times > 0) {
                             $time_in_minute = ($event_summary->total_times/60);
-                            $avg_pace = ($event_summary->total_distance/$time_in_minute); 
+                            $avg_pace = ($time_in_minute/$event_summary->total_distance); 
                         }
                      ?>
                     <div class="widget-numbers"><span class="rounded"><?php echo number_format($avg_pace , 2, ":", "" );?></span></div>

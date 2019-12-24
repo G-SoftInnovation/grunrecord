@@ -4,9 +4,9 @@ function grun_get_stat_from_img($uploaded_file){
 
  
 
-    $upload_overrides = array( 'test_form' => false );
+
     //$tmpFile = file_get_contents( $_FILES['file']['tmp_name'] );
-    $strUrl = "https://vision.googleapis.com/v1/images:annotate?key=AIzaSyAYLewmPru1UrMYpOPhbvk2Xp3GXNyd7FU";   
+    /*$strUrl = "https://vision.googleapis.com/v1/images:annotate?key=AIzaSyAYLewmPru1UrMYpOPhbvk2Xp3GXNyd7FU";   
 
     $arrHeader = array();
     $arrHeader[] = "Content-Type: application/json";
@@ -54,7 +54,17 @@ function grun_get_stat_from_img($uploaded_file){
             'minute' => $time_m,
             'second' => $time_s
         )
+    ); */
+
+    return array(
+        'distance' => 0.0,
+        'time' => array(
+            'hour' =>  0,
+            'minute' => 0,
+            'second' => 0
+        )
     );
+
 
 }
 

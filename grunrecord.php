@@ -27,6 +27,7 @@ add_action( 'admin_init', 'grun_record_requires_wordpress_version' );
 add_filter( 'template_include', 'grun_record_creating_template_include', 1 );
 add_action( 'wp_enqueue_scripts', 'grun_record_theme_enqueue_scripts' );
 add_shortcode( 'submit-grun-record', 'grun_record_form' );
+add_shortcode( 'dashboard-event-performance', 'dashboard_event_performance' );
 register_activation_hook( __FILE__, 'grun_record_activation' );
 
 
@@ -103,8 +104,9 @@ function grun_record_create_post_type() {
         array( 'title', 'editor', 'comments',
         'thumbnail', 'custom-fields' ),
         'taxonomies' => array( '' ),
+        'rewrite' => array('slug' => 'grun-records'),
         'menu_icon' =>
-        plugins_url( 'record-16x16.png', __FILE__ ),
+         plugins_url( 'record-16x16.png', __FILE__ ),
         'has_archive' => true
         )
     );
@@ -124,6 +126,15 @@ function grun_record_creating_template_include( $template_path ) {
         }
     }
     return $template_path;
+}
+
+function dashboard_event_performance($atts){
+
+    extract( shortcode_atts( array(
+        'gid' => ''
+    ), $atts ) );
+
+    include( plugin_dir_path( __FILE__ ) . 'dashboard_event_performance_inc.php');
 }
 
 function grun_record_form() {
