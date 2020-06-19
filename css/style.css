@@ -116,7 +116,7 @@
             flex: 0 0 50%;
             max-width: 50%;
         }
-
+     
     }
 
     @media (min-width: 768px) {
@@ -137,15 +137,57 @@
             flex: 0 0 33.3%;
             max-width: 33.3%;
         }
-        
+
         .grun-col-md-3 {
             -ms-flex: 0 0 25%;
             flex: 0 0 25%;
             max-width: 25%;
         }
 
-    }
+        .attach-image {
+            width: 38rem;
+            float: right;
+        }
 
+    }
+    /* 
+    ##Device = Low Resolution Tablets, Mobiles (Landscape)
+    ##Screen = B/w 481px to 767px
+    */
+
+    @media (min-width: 481px) and (max-width: 767px) {
+        .attach-image {
+            width: 100%;
+            height: auto;
+        }
+        
+        .grun-col-sm-6 {
+            -ms-flex: 0 0 50%;
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+         
+        
+    }
+    
+    /* 
+        ##Device = Most of the Smartphones Mobiles (Portrait)
+        ##Screen = B/w 320px to 479px
+    */
+    
+    @media (min-width: 320px) and (max-width: 480px) {
+        
+        .attach-image {
+            width: 100%;
+            height: auto;
+        }
+        
+        .grun-col-xs-12 {
+            -ms-flex: 0 0 100%;
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+    }
 
 
     *,
@@ -299,6 +341,19 @@
 
     .rounded-circle {
         border-radius: 50% !important;
+    }
+
+    .bg-total-distance {
+        background-size: cover;
+        background-image: url(../img/total_event_distance.png);
+        background-repeat: no-repeat;
+
+    }
+    .bg-early-finisher {
+        background-size: cover;
+        background-image: url(../img/early_finisher.png);
+        background-repeat: no-repeat;
+
     }
 
     .bg-remain-distnace {
@@ -524,4 +579,179 @@
         border: none;
         background-color: #fff;
         padding:5px;
+    }
+    /* Leader board */
+    div.dashboard-item {
+        color: #27783a;
+    }
+    .text-center {
+        text-align: center;
+    }
+    .text-left {
+        text-align: left;
+    }
+    .text-right {
+        text-align: right;
+    } 
+    
+    .leaderboard h1 {
+        font-size: 18px;
+        color: #e1e1e1;
+        padding: 12px 13px 18px;
+    
+    }
+    
+    .leaderboard ol {
+        counter-reset: leaderboard;
+    }
+    .leaderboard ul, .leaderboard ol {
+        margin: 3rem 0 3rem 1rem;
+        padding-left: 0px; 
+    }
+    .leaderboard ol li {
+        list-style: none;
+        position: relative;
+        z-index: 1;
+        font-size: 14px;
+        counter-increment: leaderboard;
+        padding: 18px 10px 18px 50px;
+        backface-visibility: hidden;
+        transform: translateZ(0) scale(1.0, 1.0);
+    }
+    
+    .leaderboard ol li rnk {
+        content: counter(leaderboard);
+        position: absolute;
+        z-index: 2;
+        top: 15px;
+        left: 15px;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        color: #fff;
+        background: #27783a;
+        border-radius: 20px;
+        text-align: center;
+    }
+    
+    .leaderboard ol li mark {
+        position: absolute;
+        z-index: 2;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        padding: 18px 10px 18px 50px;
+        margin: 0;
+        background: none;
+        color: #27783a;
+    }
+    
+    .leaderboard ol li mark::before, 
+    .leaderboard ol li mark::after {
+        content: '';
+        position: absolute;
+        z-index: 1;
+        bottom: -11px;
+        left: -9px;
+        border-top: 10px solid #216A42;
+        border-left: 10px solid transparent;
+        transition: all .1s ease-in-out;
+        opacity: 0;
+    }
+    
+    .leaderboard ol li mark::after {
+        left: auto;
+        right: -9px;
+        border-left: none;
+        border-right: 10px solid transparent;
+    }
+    
+    .leaderboard ol li distance {
+        position: relative;
+        z-index: 2;
+        display: block;
+        text-align: right;
+    }
+    
+    
+    .leaderboard ol li distance {
+        position: relative;
+        z-index: 2;
+        display: block;
+        text-align: right;
+        color: #27783a;
+    }
+    
+    .leaderboard ol li::after {
+        content: '';
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #27783a;
+        box-shadow: 0 3px 0 rgba(0, 0, 0, .08);
+        transition: all .3s ease-in-out;
+        opacity: 0;
+    }
+    
+    .leaderboard ol li.my-rank {
+        z-index: 2;
+        overflow: visible;
+        font-weight: bold;
+    }
+    .leaderboard ol li.my-rank rnk {
+        top: 8px;
+        left: 10px;
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        color: #27783a;
+        background: #fff;
+    }
+    .leaderboard ol li.my-rank mark {
+        left: 10px;
+        color: #fff;
+    }
+    .leaderboard ol li.my-rank distance {
+        color: #fff;
+    }
+    
+    
+    .leaderboard ol li.my-rank::after {
+        opacity: 1;
+        -webkit-transform: scaleX(1.06) scaleY(1.03);
+        transform: scaleX(1.06) scaleY(1.03);
+    }
+    
+    .leaderboard ol li.my-rank mark::before {
+        opacity: 1;
+        transition: all .35s ease-in-out;
+    }
+    
+    .leaderboard-logo {
+        margin-left: auto;
+        white-space: nowrap;
+        text-align: right;
+    }
+    .leaderboard .card-header {
+        padding: 0.75rem 0 1.75rem 1rem;
+        margin-bottom: 0;
+    }
+    .leaderboard .header-title {
+        color: inherit;
+        font-size: 2rem;
+        margin-top: 1rem;
+        color: #27783a;
+    }
+
+
+    table.grun-record-table {
+        width: 100%;
+    }
+
+    table.grun-record-table th {
+        font-weight: bold;
     }

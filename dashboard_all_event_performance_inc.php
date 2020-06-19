@@ -16,12 +16,7 @@
         ."INNER JOIN grun_event_member em ON em.eid = rc.eid AND rc.uid = em.uid ) a "
         ."inner join ( SELECT em2.eid, COUNT(em2.uid) as total_register FROM grun_event_member em2  "
         ."GROUP BY em2.eid  ) b ON a.eid = b.eid "
-        ."WHERE a.eid IN ( "
-        ."SELECT p.ID  "
-        ."FROM wp_posts p  "
-        ."INNER JOIN wp_postmeta pm ON pm.post_id = p.ID "
-        ."WHERE pm.meta_key = 'grun_ebib_pgid' "
-        ."AND pm.meta_value = '$gid' ) "
+        ."WHERE a.eid IS NOT NULL "
         ."GROUP BY a.eid ";
     $event_stat = $wpdb->get_row($query);
 

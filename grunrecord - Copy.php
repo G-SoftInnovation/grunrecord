@@ -28,12 +28,10 @@ add_action( 'admin_init', 'grun_record_requires_wordpress_version' );
 add_filter( 'template_include', 'grun_record_creating_template_include', 1 );
 add_action( 'wp_enqueue_scripts', 'grun_record_theme_enqueue_scripts' );
 add_shortcode( 'submit-grun-record', 'grun_record_form' );
-add_shortcode( 'dashboard-event-performance', 'dashboard_event_performance' );
-add_shortcode( 'dashboard-all-event-performance', 'dashboard_all_event_performance' );
-add_shortcode( 'dashboard-event-individual-performance', 'dashboard_event_individual_performance' );
-add_shortcode( 'dashboard-all-events-stat', 'dashboard_all_events_stat' );
-add_shortcode( 'dashboard-event-leaderboard', 'dashboard_event_leaderboard' );
 add_shortcode( 'table-individual-history', 'table_individual_event_history' );
+add_shortcode( 'dashboard-event-performance', 'dashboard_event_performance' );
+add_shortcode( 'dashboard-event-individual-performance', 'dashboard_event_individual_performance' );
+add_shortcode( 'dashboard-event-leaderboard', 'dashboard_event_leaderboard' );
 register_activation_hook( __FILE__, 'grun_record_activation' );
 
 
@@ -44,7 +42,7 @@ function grun_record_theme_enqueue_scripts() {
      
     $css_file_url = plugins_url('/css/style.css',  __FILE__ );
     $js_file_url = plugins_url('/js/file.js',  __FILE__ );
-    wp_enqueue_style( 'grun_record_css', $css_file_url, array(), '1.0.1');
+    wp_enqueue_style( 'grun_record_css', $css_file_url, array(), '1.0.2');
     wp_enqueue_script( 'grun_record_js', $js_file_url, array('jquery'), '1.0.0');
 }
 
@@ -58,9 +56,8 @@ function grun_record_activation() {
 
 function grun_record_create_table($prefix){
 
-    global $wpdb;
     $creation_record_query =
-    'CREATE TABLE IF NOT EXISTS ' . $prefix . "grun_record (
+    'CREATE TABLE ' . $prefix . "grun_record (
     `record_id` BIGINT(20) unsigned NOT NULL,
     `uid` BIGINT(20) unsigned NOT NULL,
     `attachment_url` VARCHAR(2083),
@@ -68,21 +65,25 @@ function grun_record_create_table($prefix){
     `distance` DECIMAL(5, 2) DEFAULT 0,
     `time_in_seconds` int(11) NULL,
     `time_raw` VARCHAR(64) NULL,
+    `status` int(3) NOT NULL DEFAULT 0,
+    `rejected_reason` VARCHAR(255) DEFAULT NULL,
     `created_time` DATETIME NOT NULL,
      PRIMARY KEY (`record_id`)
     );";
     
-    $wpdb->query( $creation_record_query );
+  //  $wpdb->query( $creation_record_query );
 
     $creation_event_record_query =
-    'CREATE TABLE IF NOT EXISTS ' . $prefix . "grun_events_records (
+    'CREATE TABLE ' . $prefix . "grun_events_records (
     `record_id` BIGINT(20) unsigned NOT NULL,
     `eid` BIGINT(20) unsigned NOT NULL,
      PRIMARY KEY (`record_id`, `eid`)
     );";
 
-    $wpdb->query( $creation_event_record_query );
-
+  //  $wpdb->query( $creation_event_record_query );
+    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+    dbDelta( $creation_record_query );
+    dbDelta( $creation_event_record_query );
 }
 
 function grun_record_create_post_type() {
@@ -143,12 +144,6 @@ function dashboard_event_performance($atts){
     include( plugin_dir_path( __FILE__ ) . 'dashboard_event_performance_inc.php');
 }
 
-function dashboard_all_event_performance($atts){
-
-
-    include( plugin_dir_path( __FILE__ ) . 'dashboard_all_event_performance_inc.php');
-}
-
 function table_individual_event_history($atts){
 
     extract( shortcode_atts( array(
@@ -157,7 +152,6 @@ function table_individual_event_history($atts){
 
     include( plugin_dir_path( __FILE__ ) . 'individual_record_history_inc.php');
 }
-
 function dashboard_event_individual_performance($atts){
 
     extract( shortcode_atts( array(
@@ -167,12 +161,6 @@ function dashboard_event_individual_performance($atts){
     include( plugin_dir_path( __FILE__ ) . 'dashboard_event_individual_performance_inc.php');
 }
 
-function dashboard_all_events_stat($atts){
-    extract( shortcode_atts( array(
-        'gid' => ''
-    ), $atts ) );
-    include( plugin_dir_path( __FILE__ ) . 'dashboard_all_performance_inc.php');
-}
 
 function dashboard_event_leaderboard($atts){
 
@@ -201,12 +189,13 @@ function grun_record_form() {
     $current_uid = get_current_user_id();
     $query = "SELECT em.eid, p.post_title from grun_event_member em INNER JOIN " . $wpdb->get_blog_prefix() 
     . "posts p ON p.ID = em.eid  "
-    . "INNER JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = 'start_upload_record_date' "
-    ." WHERE STR_TO_DATE( pm.meta_value , '%Y%m%d') <= curdate()  AND em.uid = ". $current_uid;
+    . "INNER JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_allow_send_stat'"
+    . " WHERE em.uid = ". $current_uid
+    . " AND pm.meta_value = '1' ";
     $events = $wpdb->get_results($query);
 
     if(empty($events)){
-        echo '<p>ไม่พบรายการวิ่งที่เปิดให้ส่งผลได้ในขณะนี้</p>';
+        echo '<p>การส่งผลการวิ่ง จำเป็นต้องสมัครรายการวิ่งก่อน</p>';
         return;
     }
 
@@ -285,8 +274,7 @@ function grun_record_form() {
                 'time_raw' => $_POST['time_raw'],
                 'created_time' => current_time('mysql', 1),
                 'time_in_seconds' => $time,
-                'uid' => get_current_user_id(),
-                'status' => 0
+                'uid' => get_current_user_id()
             );
             $wpdb->insert( $wpdb->get_blog_prefix() . 'grun_record', $record_data );
 

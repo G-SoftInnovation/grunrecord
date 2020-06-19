@@ -10,7 +10,22 @@
         <?php
 
             global $wpdb;
+            $std = date_create("2019-12-25");
+            $fnd = date_create("2020-01-25");
+            $today = date_create();
 
+            //difference between two dates
+            $total_days = date_diff($std, $fnd);
+            $pass_days = date_diff($std, $today);
+
+            $progress_days_percentage = 0;
+            if($today >= $std){
+                $progress_days_percentage = ($pass_days->format("%a")/$total_days->format("%a"))*100;
+            }
+            elseif($today>=$fnd){
+                $progress_days_percentage = 100;
+            }
+            $remaining_days = $total_days->format("%a") - $pass_days->format("%a");
             $record_id = get_the_ID();
             $q1 = "SELECT ger.*, gr.uid, gr.distance, gr.time_in_seconds FROM wp_grun_record gr "
                 ."INNER JOIN wp_grun_events_records ger ON gr.record_id = ger.record_id "
@@ -36,31 +51,6 @@
                  ." AND rrc.uid = " .  $record->uid;              
             $event_summary = $wpdb->get_row($q);
 
-
-            
-            $stdate = get_post_meta( $record->eid, 'start_date', true);
-            $fndate = get_post_meta( $record->eid, 'end_date', true);
-        
-            
-            $std = date_create(date("Y-m-d", strtotime($stdate)));
-            $fnd = date_create(date("Y-m-d", strtotime($fndate )));
-            $today = date_create();
-
-            //difference between two dates
-            $total_days = date_diff($std, $fnd);
-            $pass_days = date_diff($std, $today);
-
-            $progress_days_percentage = 0;
-            if($today >= $std){
-                $progress_days_percentage = ($pass_days->format("%a")/$total_days->format("%a"))*100;
-            }
-            elseif($today>=$fnd){
-                $progress_days_percentage = 100;
-            }
-            $remaining_days = $total_days->format("%a") - $pass_days->format("%a");
-            if($remaining_days <0){
-                $remaining_days =0;
-            }
 
         ?>
             <div class="row">
@@ -226,11 +216,7 @@
                                         class="lnr-screen icon-gradient bg-warm-flame"></i>--> 
                                 </div>
                                 <?php
-                                
                                     $avg_remain_per_day = number_format($remain_distance/$remaining_days, 2);
-                                    if($remaining_days <= 0){
-                                        $avg_remain_per_day = number_format(0, 2);
-                                    }
                                 ?>
                                 <div class="widget-numbers"><span class="rounded"><?php echo $avg_remain_per_day; ?> km</span></div>
                                 <div class="widget-subheading">ระยะทางเฉลี่ย</div>
